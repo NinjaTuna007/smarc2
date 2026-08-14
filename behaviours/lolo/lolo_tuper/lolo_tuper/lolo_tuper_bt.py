@@ -151,7 +151,7 @@ class LoloTuperBT:
             "timeout": None,
         }
 
-        status_pub = node.create_publisher(String, 'lolo_tuper/status', 10)
+        status_pub = node.create_publisher(String, self._status_topic, 10)
 
         def publish_status():
             msg = String()
@@ -162,7 +162,7 @@ class LoloTuperBT:
         # Structured, machine-parseable telemetry at the control rate (so a bag
         # captures the follow loop without lossy regex on the human status).
         self._telemetry_pub = node.create_publisher(
-            String, 'lolo_tuper/telemetry', 10)
+            String, self._telemetry_topic, 10)
 
         # Latched (transient-local) per-run goal+gains, so every recorded bag
         # self-documents the parameters that were actually used.
@@ -171,7 +171,7 @@ class LoloTuperBT:
             history=HistoryPolicy.KEEP_LAST,
             durability=DurabilityPolicy.TRANSIENT_LOCAL)
         self._goal_params_pub = node.create_publisher(
-            String, 'lolo_tuper/goal_params', latched_qos)
+            String, self._goal_params_topic, latched_qos)
         self._active_gains = gains
 
         self._as = GentlerActionServer(
@@ -206,6 +206,9 @@ class LoloTuperBT:
         # bootstrap toward the initial_setpoint before the UKF is live.
         self._odom_topic = gp('odom_topic', 'smarc/odom')
         self._latlon_topic = gp('latlon_topic', 'smarc/latlon')
+        self._status_topic = gp('status_topic', 'lolo_tuper/status')
+        self._telemetry_topic = gp('telemetry_topic', 'lolo_tuper/telemetry')
+        self._goal_params_topic = gp('goal_params_topic', 'lolo_tuper/goal_params')
         self._move_to_action_name = gp('move_to_action_name', 'auv_depth_move_to')
 
         # --- Velocity-matching follow loop (node-level tuning) ---------------
